@@ -4,9 +4,6 @@ __pycache__/
 # Virtual environment
 .venv/
 
-# Environment variables
-.env
-
 # Database backups
 *.dump
 *.backup
