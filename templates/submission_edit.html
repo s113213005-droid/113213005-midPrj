@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>修改投稿</title>
+</head>
+<body>
+
+    <h1>修改投稿</h1>
+
+    <form action="/author/submissions/edit/{{ data.id }}"
+          method="post">
+
+        <label>投稿類別：</label>
+        <input type="text"
+               name="category"
+               value="{{ data.category }}"
+               required>
+
+        <label>文章標題：</label>
+        <input type="text"
+               name="title"
+               value="{{ data.title }}"
+               required>
+<br/>
+        <label>文章內容：</label><br/>
+        <textarea name="content"
+                  rows="10" style="width:505px"
+                  required>{{ data.content }}</textarea>
+
+        <button type="submit">儲存修改</button>
+
+    </form>
+
+    <a href="/author/submissions">返回投稿列表</a>
+
+</body>
+</html>

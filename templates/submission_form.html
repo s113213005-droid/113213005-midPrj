@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>新增投稿</title>
+    <link rel="stylesheet" href="/www/style.css">
+</head>
+<body>
+
+    <h1>新增投稿</h1>
+
+    <form action="/author/submissions/new" method="post">
+
+        <label>投稿類別：</label>
+        <input type="text" name="category" required>
+
+        <label>文章標題：</label>
+        <input type="text" name="title" required>
+<br/>
+        <label>文章內容：</label><br/>
+        <textarea name="content" rows="10" style="width:505px" required></textarea>
+
+        <button type="submit">送出新增</button>
+
+    </form>
+
+    <a href="/author/submissions">返回投稿列表</a>
+
+</body>
+</html>
