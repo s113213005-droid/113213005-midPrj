@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>修改投稿</title>
+	<link rel="stylesheet" href="/www/style.css">
 </head>
 <body>
 
     <h1>修改投稿</h1>
-
+{% if data.editor_comment %}
+    <div style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 12px; border-radius: 6px; margin-bottom: 20px; max-width: 505px;">
+        <strong>編輯修改建議：</strong>
+        <p style="margin: 5px 0 0 0; white-space: pre-wrap;">{{ data.editor_comment }}</p>
+    </div>
+    {% endif %}
     <form action="/author/submissions/edit/{{ data.id }}"
           method="post">
 

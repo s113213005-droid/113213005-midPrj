@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -23,23 +23,26 @@
     <form action="/editor/submissions/{{ data.id }}/approve"
           method="post"
           style="display:inline;">
-        <button type="submit"
+        <button type="submit" class="btn btn-approve"
                 onclick="return confirm('確定通過這篇投稿嗎？')">
             通過
         </button>
     </form>
 
+    <br><br>
+
     <form action="/editor/submissions/{{ data.id }}/reject"
-          method="post"
-          style="display:inline;">
-        <button type="submit"
+          method="post">
+        <label><strong>退回修改建議：</strong></label><br>
+        <textarea name="editor_comment" rows="4" style="width:500px;" placeholder="請填寫給作者的修改建議..." required></textarea><br>
+        <button type="submit" class="btn btn-reject"
                 onclick="return confirm('確定退回這篇投稿嗎？')">
             退回
         </button>
     </form>
 
     <p>
-        <a href="/editor/submissions">返回審查清單</a>
+        <a href="/editor/submissions" class="back-link">返回審查清單</a>
     </p>
 </body>
 </html>

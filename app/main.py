@@ -17,6 +17,16 @@ app = FastAPI(
 app.mount("/www", StaticFiles(directory="www"), name="www")
 
 
+# 確保動態 HTML 不會被瀏覽器快取，避免跳轉或修改後需手動 F5
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.method == "GET" and not request.url.path.startswith("/www"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
+
+
 # / ->選擇作者/編輯
 @app.get("/")
 async def home(request: Request):
@@ -33,7 +43,12 @@ async def submission_list(
 ):
 
     cur = await conn.execute("""
-        SELECT s.id, s.category, s.title, s.status
+        SELECT
+            s.id,
+            s.category,
+            s.title,
+            s.status,
+            s.editor_comment
         FROM submissions AS s
         JOIN users AS u ON s.author_id = u.id
         WHERE u.username = %s
@@ -93,27 +108,34 @@ async def submission_edit(
     request: Request,
     db: AsyncConnection = Depends(getDB)
 ):
-
     cur = await db.execute("""
-        SELECT s.id, s.category, s.title, s.content
+        SELECT
+            s.id,
+            s.category,
+            s.title,
+            s.content,
+            s.status,
+            s.editor_comment
         FROM submissions AS s
         JOIN users AS u ON s.author_id = u.id
         WHERE s.id = %s
           AND u.username = %s
-          AND s.status = '編輯中'
+          AND s.status IN ('編輯中')
     """, (submission_id, "demo"))
 
     data = await cur.fetchone()
 
     if data is None:
-        return HTMLResponse("找不到投稿，或此投稿目前不能修改", status_code=404)
+        return HTMLResponse(
+            "找不到投稿，或此投稿目前不能修改",
+            status_code=404
+        )
 
     return templates.TemplateResponse(
         request=request,
         name="submission_edit.html",
         context={"data": data}
     )
-
 
 # 接收修改資料
 @app.post("/author/submissions/edit/{submission_id}")
@@ -124,7 +146,6 @@ async def submission_update(
     content: str = Form(...),
     db: AsyncConnection = Depends(getDB)
 ):
-
     cur = await db.execute("""
         UPDATE submissions
         SET category = %s,
@@ -134,7 +155,7 @@ async def submission_update(
           AND author_id = (
               SELECT id FROM users WHERE username = %s
           )
-          AND status = '編輯中'
+          AND status IN ('編輯中', '退回修改')
     """, (
         category,
         title,
@@ -144,13 +165,15 @@ async def submission_update(
     ))
 
     if cur.rowcount == 0:
-        return HTMLResponse("找不到投稿，或此投稿目前不能修改", status_code=404)
+        return HTMLResponse(
+            "找不到投稿，或此投稿目前不能修改",
+            status_code=404
+        )
 
     return RedirectResponse(
         url="/author/submissions",
         status_code=303
     )
-
 
 # 刪除投稿
 @app.post("/author/submissions/delete/{submission_id}")
@@ -182,7 +205,7 @@ async def submission_submit(submission_id: int,db= Depends(getDB)):
           AND author_id = (
               SELECT id FROM users WHERE username = %s
           )
-          AND status = '編輯中'
+          AND status IN ('編輯中')
     """, (submission_id, "demo"))
 
     # 確認是否成功更新資料
@@ -289,14 +312,24 @@ async def editor_approve(
 @app.post("/editor/submissions/{submission_id}/reject")
 async def editor_reject(
     submission_id: int,
+    editor_comment: str = Form(...),
     db: AsyncConnection = Depends(getDB)
 ):
+    editor_comment = editor_comment.strip()
+
+    if not editor_comment:
+        return HTMLResponse(
+            "請填寫修改建議",
+            status_code=400
+        )
+
     cur = await db.execute("""
         UPDATE submissions
-        SET status = '編輯中'
+        SET status = '編輯中',
+        editor_comment = %s
         WHERE id = %s
-          AND status = '審查中'
-    """, (submission_id,))
+        AND status = '審查中'
+    """, (editor_comment, submission_id))
 
     if cur.rowcount == 0:
         return HTMLResponse(

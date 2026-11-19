@@ -1,18 +1,17 @@
-
+﻿
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <title>我的投稿</title>
+	<link rel="stylesheet" href="/www/style.css">
 </head>
 
 <body>
 
     <h1>我的投稿列表</h1>
 
-    <a href="/author/submissions/new">
-        <button>新增投稿</button>
-    </a>
+    <a href="/author/submissions/new" class="btn btn-add">新增投稿</a>
 
     <table>
         <tr>
@@ -28,30 +27,34 @@
             <td style="text-align:center">{{ item.id }}</td>
             <td>{{ item.category }}</td>
             <td>{{ item.title }}</td>
-            <td>{{ item.status }}</td>
+            <td>
+                {% if item.status == '已通過' %}
+                    <span style="color: #16a34a; font-weight: bold;">{{ item.status }}</span>
+                {% elif item.status == '編輯中' or item.status == '退回修改' %}
+                    <span style="color: #d97706; font-weight: bold;">{{ item.status }}</span>
+                {% elif item.status == '審查中' %}
+                    <span style="color: #2563eb; font-weight: bold;">{{ item.status }}</span>
+                {% else %}
+                    {{ item.status }}
+                {% endif %}
+            </td>
             <td>
 				{% if item.status == '編輯中' %}
 
-					<a href="/author/submissions/edit/{{ item.id }}" class="btn">
-						修改
-					</a>
+					<a href="/author/submissions/edit/{{ item.id }}" class="btn btn-edit">修改</a>
 
 					<form action="/author/submissions/delete/{{ item.id }}"
 						  method="post"
 						  style="display:inline;">
-						<button type="submit"
-								onclick="return confirm('確定刪除這篇投稿嗎？')">
-							刪除
-						</button>
+						<button type="submit" class="btn btn-delete"
+								onclick="return confirm('確定刪除這篇投稿嗎？')">刪除</button>
 					</form>
 
 					<form action="/author/submissions/submit/{{ item.id }}"
 						  method="post"
 						  style="display:inline;">
-						<button type="submit"
-								onclick="return confirm('確定要送出審查嗎？')">
-							送出審查
-						</button>
+						<button type="submit" class="btn btn-submit"
+								onclick="return confirm('確定要送出審查嗎？')">送出審查</button>
 					</form>
 
 				{% else %}
@@ -67,34 +70,5 @@
     </table>
 
 </body>
-<style>
-table{
-   border-spacing: 15px;
-   }
-a {
-text-decoration: none;
-}
-.btn{
-display: inline-block;
-    text-decoration: none;
-    color: #000000;
-    background-color: #f0f0f0;
-    border: 1px solid #767676;
-    border-radius: 3px;
-    padding: 1.5px 6px;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-    user-select: none;
-  }
 
-  .btn-default:hover {
-    background-color: #e5e5e5;
-    border-color: #4f4f4f;
-  }
-
-  .btn-default:active {
-    background-color: #d5d5d5;
-    border-color: #2c2c2c;
-  }
-</style>
 </html>
